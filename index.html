@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Website</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Основной стиль */
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Заголовок */
+    h1 {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #343a40;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    /* Контейнер для поиска */
+    .search-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .search-container input {
+      width: 50%;
+      border-radius: 25px;
+      padding: 12px 20px;
+      border: 1px solid #ccc;
+    }
+
+    .search-container button {
+      padding: 12px 20px;
+      border-radius: 25px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .search-container button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Кнопки категорий */
+    .category-btns {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .category-btns button {
+      border-radius: 25px;
+      padding: 10px 20px;
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .category-btns button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Новостные карточки */
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card img {
+      border-radius: 15px 15px 0 0;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .card-text {
+      color: #6c757d;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      .search-container input {
+        width: 80%;
+      }
+
+      .category-btns {
+        flex-direction: column;
+      }
+
+      .category-btns button {
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>News Website</h1>
+
+    <div class="search-container">
+      <input type="text" id="search" class="form-control" placeholder="Search for news...">
+      <button id="searchBtn" class="btn btn-primary">Search</button>
+    </div>
+
+    <div class="category-btns">
+      <button class="btn btn-secondary category" data-category="technology">Technology</button>
+      <button class="btn btn-secondary category" data-category="sports">Sports</button>
+      <button class="btn btn-secondary category" data-category="business">Business</button>
+    </div>
+
+    <div id="news-container" class="row mt-4"></div>
+  </div>
+
+  <script>
+    const apiKey = 'pub_62247171741ca1dccbf8301d57595cd10ec27'; // Вставьте ваш API-ключ из https://newsdata.io
+    const newsContainer = document.getElementById('news-container');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('search');
+    const categoryButtons = document.querySelectorAll('.category');
+
+    // Функция для получения новостей
+    async function fetchNews(query = '', category = '') {
+      let url = `https://newsdata.io/api/1/news?apikey=${apiKey}&language=en`;
+
+      if (query) {
+        url += `&q=${query}`;
+      }
+
+      if (category) {
+        url += `&category=${category}`;
+      }
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.results && data.results.length > 0) {
+          displayNews(data.results);
+        } else {
+          newsContainer.innerHTML = '<p>No news found.</p>';
+        }
+      } catch (error) {
+        console.error('Error fetching news:', error);
+        newsContainer.innerHTML = '<p>Error loading news. Please try again later.</p>';
+      }
+    }
+
+    // Функция для отображения новостей
+    function displayNews(articles) {
+      newsContainer.innerHTML = '';
+      articles.forEach(article => {
+        const newsElement = document.createElement('div');
+        newsElement.classList.add('col-md-4', 'mb-4');
+
+        newsElement.innerHTML = `
+          <div class="card h-100">
+            <img src="${article.image_url || 'https://via.placeholder.com/300x200'}" class="card-img-top" alt="News Image">
+            <div class="card-body">
+              <h5 class="card-title">${article.title}</h5>
+              <p class="card-text">${article.description || 'No description available.'}</p>
+              <a href="${article.link}" target="_blank" class="btn btn-primary">Read more</a>
+            </div>
+          </div>
+        `;
+
+        newsContainer.appendChild(newsElement);
+      });
+    }
+
+    // Слушатель для поиска
+    searchBtn.addEventListener('click', () => {
+      const query = searchInput.value.trim();
+      fetchNews(query);
+    });
+
+    // Слушатели для кнопок категорий
+    categoryButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const category = button.getAttribute('data-category');
+        fetchNews('', category);
+      });
+    });
+
+    // Загрузка новостей по умолчанию
+    fetchNews();
+  </script>
+</body>
+</html>
